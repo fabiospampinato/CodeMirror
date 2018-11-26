@@ -43,7 +43,7 @@ class Context {
   }
 
   static fromSaved(doc, saved, line) {
-    if (saved instanceof SavedContext)
+    if (saved.state)
       return new Context(doc, copyState(doc.mode, saved.state), line, saved.lookAhead)
     else
       return new Context(doc, copyState(doc.mode, saved), line)
@@ -255,7 +255,7 @@ function findStartLine(cm, n, precise) {
   for (let search = n; search > lim; --search) {
     if (search <= doc.first) return doc.first
     let line = getLine(doc, search - 1), after = line.stateAfter
-    if (after && (!precise || search + (after instanceof SavedContext ? after.lookAhead : 0) <= doc.modeFrontier))
+    if (after && (!precise || search + (after.state ? after.lookAhead : 0) <= doc.modeFrontier))
       return search
     let indented = countColumn(line.text, null, cm.options.tabSize)
     if (minline == null || minindent > indented) {
@@ -275,7 +275,7 @@ export function retreatFrontier(doc, n) {
     // change is on 3
     // state on line 1 looked ahead 2 -- so saw 3
     // test 1 + 2 < 3 should cover this
-    if (saved && (!(saved instanceof SavedContext) || line + saved.lookAhead < n)) {
+    if (saved && (!(saved.state) || line + saved.lookAhead < n)) {
       start = line + 1
       break
     }
